@@ -4,64 +4,51 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.example.iirol.harjoitus5_6.Class.Database.Repositories.KirjaRepository;
+import com.example.iirol.harjoitus5_6.Class.Database.Repositories.Kirja.KirjaRepository;
+import com.example.iirol.harjoitus5_6.Class.Database.Repositories.Repository;
 
 import java.util.ArrayList;
 
 public class Database extends SQLiteOpenHelper {
 
-    // Fields
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "database";
-
     private ArrayList<Repository> repositories;
-    private KirjaRepository kirjaRepository;
 
-    // Singleton
-    private static Database database = null;
-    public static void setDatabase(Context context) {
-        if (Database.database != null) {
-            return;
-        }
-        Database.database = new Database(context);
-    }
-    public static Database getDatabase() {
-        return Database.database;
-    }
+    public KirjaRepository KirjaRepository;
 
-    // Constructor
-    private Database(Context context) {
+    public Database(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
 
         this.repositories = new ArrayList<>();
 
-        // Kirjarepository
-        this.kirjaRepository = new KirjaRepository(this);
-        this.repositories.add(this.kirjaRepository);
+        this.KirjaRepository = new KirjaRepository(this);
+        this.repositories.add(this.KirjaRepository);
 
+        // Repositories
+        this.repositories.addAll(repositories);
     }
 
     // @SQLiteOpenHelper
-    @Override public void onCreate(SQLiteDatabase db) {
+    @Override public void onCreate(SQLiteDatabase writtableDatabase) {
 
         // Luo jokaisen repositorien taulut
         for (Repository repository : this.repositories) {
-            repository.createTableIfNotExists();
+	        writtableDatabase.execSQL(repository.getCreateTableIfNotExistsSQL());
         }
 
     }
-    @Override public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    @Override public void onUpgrade(SQLiteDatabase writtableDatabase, int oldVersion, int newVersion) {
 
         // Poista kaikki repositorien taulut
         for (Repository repository : this.repositories) {
-            repository.deleteTableIfExists();
+	        writtableDatabase.execSQL("DROP TABLE IF EXISTS " + repository.getTableName() + ";");
         }
 
         // Luo taulut sitten uudelleen
-        this.onCreate(db);
+        this.onCreate(writtableDatabase);
     }
 
-    // Methods
     public void deleteTable(String tableName) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DROP TABLE IF EXISTS " + tableName + ";");
@@ -71,9 +58,6 @@ public class Database extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE * FROM " + tableName + ";");
         db.close();
-    }
-    public KirjaRepository getKirjaRepository() {
-        return this.kirjaRepository;
     }
 
 }

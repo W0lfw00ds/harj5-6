@@ -1,4 +1,4 @@
-package com.example.iirol.harjoitus5_6.Class;
+package com.example.iirol.harjoitus5_6.Class.Database.Repositories.Kirja;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,7 +22,7 @@ public class Kirja {
         this.sdf = new SimpleDateFormat("dd.MM.yyyy - h:ma");
     }
     public Kirja(Integer id, int numero, String nimi, int painos, long hankintapvmms) {
-        this(null, numero, nimi, painos, new java.util.Date(hankintapvmms));
+        this(id, numero, nimi, painos, new java.util.Date(hankintapvmms));
     }
     public Kirja(int numero, String nimi, int painos, Date hankintapvm) {
         this(null, numero, nimi, painos, hankintapvm);

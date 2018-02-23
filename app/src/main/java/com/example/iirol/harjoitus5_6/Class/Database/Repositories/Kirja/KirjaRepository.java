@@ -1,15 +1,14 @@
-package com.example.iirol.harjoitus5_6.Class.Database.Repositories;
+package com.example.iirol.harjoitus5_6.Class.Database.Repositories.Kirja;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.iirol.harjoitus5_6.Class.Database.Database;
-import com.example.iirol.harjoitus5_6.Class.Database.Repository;
-import com.example.iirol.harjoitus5_6.Class.Kirja;
+import com.example.iirol.harjoitus5_6.Class.Database.Repositories.Repository;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 public class KirjaRepository implements Repository {
 
@@ -22,28 +21,29 @@ public class KirjaRepository implements Repository {
     private static final String COLUMN_HANKINTAPVM = "hankintapvm";
 
     // Fields
-    private final Database database;
+    private Database database;
 
     // Constructor
-    public KirjaRepository(Database database) {
-        this.database = database;
+    public KirjaRepository(Database databaseHelper) {
+        this.database = databaseHelper;
     }
 
     // @Repository
-    @Override public void createTableIfNotExists() {
-        String sql = "CREATE TABLE IF NOT EXISTS " + KirjaRepository.TABLENAME + " (" +
-                     "  " + COLUMN_ID + " integer PRIMARY KEY," +
-                     "  " + COLUMN_NUMERO + " text NOT NULL," +
-                     "  " + COLUMN_NIMI + " text NOT NULL," +
-                     "  " + COLUMN_PAINOS + " text NOT NULL UNIQUE," +
-                     "  " + COLUMN_HANKINTAPVM + " text NOT NULL UNIQUE" +
-                     ");";
-        SQLiteDatabase db = this.database.getWritableDatabase();
-        db.execSQL(sql);
-        db.close();
+    @Override public String getCreateTableIfNotExistsSQL() {
+
+        return "CREATE TABLE IF NOT EXISTS " + KirjaRepository.TABLENAME + " (" +
+		        "  " + COLUMN_ID + " INTEGER PRIMARY KEY," +
+		        "  " + COLUMN_NUMERO + " INTEGER NOT NULL," +
+		        "  " + COLUMN_NIMI + " TEXT NOT NULL," +
+		        "  " + COLUMN_PAINOS + " INTEGER NOT NULL," +
+		        "  " + COLUMN_HANKINTAPVM + " INTEGER NOT NULL UNIQUE" +
+		        ");";
     }
     @Override public void deleteTableIfExists() {
-        this.database.deleteTable(KirjaRepository.TABLENAME);
+        this.database.deleteTable(this.getTableName());
+    }
+    @Override public String getTableName() {
+        return KirjaRepository.TABLENAME;
     }
     @Override public void clearTable() {
         this.database.clearTable(KirjaRepository.TABLENAME);
@@ -92,7 +92,7 @@ public class KirjaRepository implements Repository {
             if (cursor.moveToFirst()) {
                 while (!cursor.isAfterLast()) {
 
-                    int parsedId = Integer.parseInt(cursor.getString(0));
+                    int parsedId = cursor.getInt(0);
                     int parsedNumero = cursor.getInt(1);
                     String parsedNimi = cursor.getString(2);
                     int parsedPainos = cursor.getInt(3);
@@ -168,16 +168,19 @@ public class KirjaRepository implements Repository {
         );
 
         if (cursor != null) {
-            cursor.moveToFirst();
+            if (cursor.moveToFirst()) {
 
-            int parsedId = Integer.parseInt(cursor.getString(0));
-            int parsedNumero = cursor.getInt(1);
-            String parsedNimi = cursor.getString(2);
-            int parsedPainos = cursor.getInt(3);
-            long parsedHankintapvmUnixTime = cursor.getLong(4);
+	            int parsedId = cursor.getInt(0);
+	            int parsedNumero = cursor.getInt(1);
+	            String parsedNimi = cursor.getString(2);
+	            int parsedPainos = cursor.getInt(3);
+	            long parsedHankintapvmUnixTime = cursor.getLong(4);
 
-            cursor.close();
-            return new Kirja(parsedId, parsedNumero, parsedNimi, parsedPainos, parsedHankintapvmUnixTime);
+	            cursor.close();
+	            return new Kirja(parsedId, parsedNumero, parsedNimi, parsedPainos, parsedHankintapvmUnixTime);
+            }
+	        cursor.close();
+            return null;
 
         } else {
             return null;
