@@ -1,5 +1,6 @@
 package com.example.iirol.harjoitus5_6;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.widget.Toast;
 
 import com.example.iirol.harjoitus5_6.Class.Database.Database;
 import com.example.iirol.harjoitus5_6.Class.Database.Repositories.Kirja.Kirja;
+import com.example.iirol.harjoitus5_6.Class.Database.Repositories.Kirja.KirjaRepository;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -27,10 +29,29 @@ public class MainActivity extends AppCompatActivity {
     private Button addnew;
     private Button deletefirst;
     private TableLayout listaus;
-	SimpleDateFormat sdf;
 
+	private SimpleDateFormat sdf;
     private Database database;
 
+    private void edit_click(View view) {
+	    TableRow clickedTableRow = (TableRow)view;
+		Kirja editableKirja = (Kirja)clickedTableRow.getTag();
+
+	    // Luo uusi bundle mihin kootaan välitettävät parametrit toiselle activitylle
+	    Bundle bundle = new Bundle();
+	    bundle.putInt(KirjaRepository.COLUMN_ID, editableKirja.getId());
+	    bundle.putInt(KirjaRepository.COLUMN_NUMERO, editableKirja.getNumero());
+	    bundle.putString(KirjaRepository.COLUMN_NIMI, editableKirja.getNimi());
+	    bundle.putInt(KirjaRepository.COLUMN_PAINOS, editableKirja.getPainos());
+	    bundle.putLong(KirjaRepository.COLUMN_HANKINTAPVM, editableKirja.getHankintapvmUnixTime());
+
+	    // Luo uusi intent millä siirrytään activitystä toiseen, ja lisää bundle siihen mukaan
+	    Intent intent = new Intent(this, EditKirja.class);
+	    intent.putExtras(bundle);
+
+	    // Siirry toiseen activityyn
+	    this.startActivity(intent);
+    }
     private void addnew_click(View view) {
 
         // Numero
@@ -111,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
             TableRow tableRow = new TableRow(this);
             tableRow.setPadding(5, 5, 5, 5);
             tableRow.addView(textView);
+			tableRow.setTag(kirja); // Lisää Kirja-olion referenssi 'TableRow'iin
 
             this.listaus.addView(tableRow);
         }
@@ -121,36 +143,37 @@ public class MainActivity extends AppCompatActivity {
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+	    this.getViews();
 
         this.sdf = new SimpleDateFormat("dd.MM.yyyy");
-
-        // Hae komponentit
-        this.numero = findViewById(R.id.numero);
-        this.nimi = findViewById(R.id.nimi);
-        this.painos = findViewById(R.id.painos);
-        this.hankintapvm = findViewById(R.id.hankintapvm);
-        this.addnew = findViewById(R.id.addnew);
-        this.deletefirst = findViewById(R.id.deletefirst);
-        this.listaus = findViewById(R.id.listaus);
-
-        // Aseta kuuntelijat
-        this.addnew.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                addnew_click(view);
-            }
-        });
-        this.deletefirst.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                deletefirst_click(view);
-            }
-        });
-
-        // Aseta tietokanta
-        this.database = new Database(this);
+        this.database = Database.getInstance(this);
 
         // Päivitä näytettävät rivit
         this.listaaKirjat();
     }
+    private void getViews() {
+
+	    this.numero = findViewById(R.id.numero);
+	    this.nimi = findViewById(R.id.nimi);
+	    this.painos = findViewById(R.id.painos);
+	    this.hankintapvm = findViewById(R.id.hankintapvm);
+	    this.addnew = findViewById(R.id.addnew);
+	    this.deletefirst = findViewById(R.id.deletefirst);
+	    this.listaus = findViewById(R.id.listaus);
+
+	    this.addnew.setOnClickListener(new View.OnClickListener() {
+		    @Override
+		    public void onClick(View view) {
+			    addnew_click(view);
+		    }
+	    });
+	    this.deletefirst.setOnClickListener(new View.OnClickListener() {
+		    @Override
+		    public void onClick(View view) {
+			    deletefirst_click(view);
+		    }
+	    });
+
+    }
+
 }

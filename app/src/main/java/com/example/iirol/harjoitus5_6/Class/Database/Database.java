@@ -11,13 +11,25 @@ import java.util.ArrayList;
 
 public class Database extends SQLiteOpenHelper {
 
+    // FIELDS STATIC
     private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "database";
     private ArrayList<Repository> repositories;
 
+    // FIELDS
     public KirjaRepository KirjaRepository;
 
-    public Database(Context context) {
+    // Singleton
+    private static Database instance;
+    public static Database getInstance(Context context) {
+        if (Database.instance == null) {
+            Database.instance = new Database(context);
+        }
+        return Database.instance;
+    }
+
+    // CONSTRUCTORS
+    private Database(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
 
         this.repositories = new ArrayList<>();

@@ -10,20 +10,20 @@ import com.example.iirol.harjoitus5_6.Class.Database.Repositories.Repository;
 
 import java.util.ArrayList;
 
-public class KirjaRepository implements Repository {
+public class KirjaRepository implements Repository<Kirja> {
 
-    // Static fields
-    private static final String TABLENAME = "Kirja";
-    private static final String COLUMN_ID = "id";
-    private static final String COLUMN_NUMERO = "numero";
-    private static final String COLUMN_NIMI = "nimi";
-    private static final String COLUMN_PAINOS = "painos";
-    private static final String COLUMN_HANKINTAPVM = "hankintapvm";
+    // FIELDS STATIC
+    public static final String TABLENAME = "Kirja";
+    public static final String COLUMN_ID = "id";
+    public static final String COLUMN_NUMERO = "numero";
+    public static final String COLUMN_NIMI = "nimi";
+    public static final String COLUMN_PAINOS = "painos";
+    public static final String COLUMN_HANKINTAPVM = "hankintapvm";
 
-    // Fields
+    // FIELDS
     private Database database;
 
-    // Constructor
+    // CONSTRUCTOR
     public KirjaRepository(Database databaseHelper) {
         this.database = databaseHelper;
     }
@@ -48,9 +48,7 @@ public class KirjaRepository implements Repository {
     @Override public void clearTable() {
         this.database.clearTable(KirjaRepository.TABLENAME);
     }
-
-    // Methods
-    public void add(Kirja kirja) {
+    @Override public void add(Kirja kirja) {
         SQLiteDatabase db = this.database.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -67,7 +65,7 @@ public class KirjaRepository implements Repository {
 
         db.close();
     }
-    public ArrayList<Kirja> getAll() {
+    @Override public ArrayList<Kirja> getAll() {
         SQLiteDatabase db = this.database.getReadableDatabase();
         ArrayList<Kirja> kirjat = new ArrayList<>();
 
@@ -109,7 +107,7 @@ public class KirjaRepository implements Repository {
 
         return kirjat;
     }
-    public Kirja getByID(int id) {
+    @Override public Kirja getByID(int id) {
         SQLiteDatabase db = this.database.getReadableDatabase();
 
         Cursor cursor = db.query(
@@ -147,7 +145,7 @@ public class KirjaRepository implements Repository {
             return null;
         }
     }
-    public Kirja getFirst() {
+    @Override public Kirja getFirst() {
         SQLiteDatabase db = this.database.getReadableDatabase();
 
         Cursor cursor = db.query(
@@ -186,7 +184,7 @@ public class KirjaRepository implements Repository {
             return null;
         }
     }
-    public boolean modify(Kirja kirja) {
+    @Override public boolean modify(Kirja kirja) {
         SQLiteDatabase db = this.database.getWritableDatabase();
         boolean updated = false;
 
@@ -214,7 +212,7 @@ public class KirjaRepository implements Repository {
         db.close();
         return updated;
     }
-    public boolean delete(Kirja kirja) {
+    @Override public boolean delete(Kirja kirja) {
 
         // Jos henkilö ei edes ole kannassa, poistu
         if (kirja.getId() == null) {
@@ -232,7 +230,7 @@ public class KirjaRepository implements Repository {
         db.close();
         return deleted;
     }
-    public boolean deleteFirst() {
+    @Override public boolean deleteFirst() {
 
         Kirja ekaKirja = this.getFirst();
         if (ekaKirja != null) {
