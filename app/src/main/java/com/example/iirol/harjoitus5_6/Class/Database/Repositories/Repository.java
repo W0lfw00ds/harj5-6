@@ -9,7 +9,7 @@ public interface Repository<T> {
 	String getTableName();
 	void clearTable();
 
-	void add(T kirja);
+	long add(T kirja);
 	ArrayList<T> getAll();
 	T getByID(int id);
 	T getFirst();

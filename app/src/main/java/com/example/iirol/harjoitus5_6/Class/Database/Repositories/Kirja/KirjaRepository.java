@@ -3,7 +3,6 @@ package com.example.iirol.harjoitus5_6.Class.Database.Repositories.Kirja;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.iirol.harjoitus5_6.Class.Database.Database;
 import com.example.iirol.harjoitus5_6.Class.Database.Repositories.Repository;
@@ -36,7 +35,7 @@ public class KirjaRepository implements Repository<Kirja> {
 		        "  " + COLUMN_NUMERO + " INTEGER NOT NULL," +
 		        "  " + COLUMN_NIMI + " TEXT NOT NULL," +
 		        "  " + COLUMN_PAINOS + " INTEGER NOT NULL," +
-		        "  " + COLUMN_HANKINTAPVM + " INTEGER NOT NULL UNIQUE" +
+		        "  " + COLUMN_HANKINTAPVM + " TEXT NOT NULL" +
 		        ");";
     }
     @Override public void deleteTableIfExists() {
@@ -48,22 +47,24 @@ public class KirjaRepository implements Repository<Kirja> {
     @Override public void clearTable() {
         this.database.clearTable(KirjaRepository.TABLENAME);
     }
-    @Override public void add(Kirja kirja) {
+    @Override public long add(Kirja kirja) {
         SQLiteDatabase db = this.database.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(KirjaRepository.COLUMN_NUMERO, kirja.getNumero());
         values.put(KirjaRepository.COLUMN_NIMI, kirja.getNimi());
         values.put(KirjaRepository.COLUMN_PAINOS, kirja.getPainos());
-        values.put(KirjaRepository.COLUMN_HANKINTAPVM, kirja.getHankintapvmUnixTime());
+        values.put(KirjaRepository.COLUMN_HANKINTAPVM, kirja.getHankintapvm());
 
-        db.insert(
+        long addedCount = db.insert(
             KirjaRepository.TABLENAME,
             null,
             values
         );
 
         db.close();
+
+        return addedCount;
     }
     @Override public ArrayList<Kirja> getAll() {
         SQLiteDatabase db = this.database.getReadableDatabase();
@@ -94,9 +95,9 @@ public class KirjaRepository implements Repository<Kirja> {
                     int parsedNumero = cursor.getInt(1);
                     String parsedNimi = cursor.getString(2);
                     int parsedPainos = cursor.getInt(3);
-                    long parsedHankintapvmUnixTime = cursor.getLong(4);
+                    String parsedHankintapvm = cursor.getString(4);
 
-                    kirjat.add(new Kirja(parsedId, parsedNumero, parsedNimi, parsedPainos, parsedHankintapvmUnixTime));
+                    kirjat.add(new Kirja(parsedId, parsedNumero, parsedNimi, parsedPainos, parsedHankintapvm));
 
                     cursor.moveToNext();
                 }
@@ -136,10 +137,11 @@ public class KirjaRepository implements Repository<Kirja> {
             int parsedNumero = cursor.getInt(1);
             String parsedNimi = cursor.getString(2);
             int parsedPainos = cursor.getInt(3);
-            long parsedHankintapvmUnixTime = cursor.getLong(4);
+            String parsedHankintapvm = cursor.getString(4);
 
             cursor.close();
-            return new Kirja(parsedId, parsedNumero, parsedNimi, parsedPainos, parsedHankintapvmUnixTime);
+
+            return new Kirja(parsedId, parsedNumero, parsedNimi, parsedPainos, parsedHankintapvm);
 
         } else {
             return null;
@@ -172,10 +174,10 @@ public class KirjaRepository implements Repository<Kirja> {
 	            int parsedNumero = cursor.getInt(1);
 	            String parsedNimi = cursor.getString(2);
 	            int parsedPainos = cursor.getInt(3);
-	            long parsedHankintapvmUnixTime = cursor.getLong(4);
+	            String parsedHankintapvm = cursor.getString(4);
 
 	            cursor.close();
-	            return new Kirja(parsedId, parsedNumero, parsedNimi, parsedPainos, parsedHankintapvmUnixTime);
+	            return new Kirja(parsedId, parsedNumero, parsedNimi, parsedPainos, parsedHankintapvm);
             }
 	        cursor.close();
             return null;
@@ -199,7 +201,7 @@ public class KirjaRepository implements Repository<Kirja> {
             values.put(KirjaRepository.COLUMN_NUMERO, kirja.getNumero());
             values.put(KirjaRepository.COLUMN_NIMI, kirja.getNimi());
             values.put(KirjaRepository.COLUMN_PAINOS, kirja.getPainos());
-            values.put(KirjaRepository.COLUMN_HANKINTAPVM, kirja.getHankintapvmUnixTime());
+            values.put(KirjaRepository.COLUMN_HANKINTAPVM, kirja.getHankintapvm());
 
             updated = db.update(
                 KirjaRepository.TABLENAME,

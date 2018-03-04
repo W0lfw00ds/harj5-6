@@ -33,6 +33,30 @@ public class MainActivity extends AppCompatActivity {
 	private SimpleDateFormat sdf;
     private Database database;
 
+	private void getViews() {
+
+		this.numero = findViewById(R.id.numero);
+		this.nimi = findViewById(R.id.nimi);
+		this.painos = findViewById(R.id.painos);
+		this.hankintapvm = findViewById(R.id.hankintapvm);
+		this.addnew = findViewById(R.id.addnew);
+		this.deletefirst = findViewById(R.id.deletefirst);
+		this.listaus = findViewById(R.id.listaus);
+
+		this.addnew.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				addnew_click(view);
+			}
+		});
+		this.deletefirst.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				deletefirst_click(view);
+			}
+		});
+
+	}
     private void edit_click(View view) {
 	    TableRow clickedTableRow = (TableRow)view;
 		Kirja editableKirja = (Kirja)clickedTableRow.getTag();
@@ -43,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
 	    bundle.putInt(KirjaRepository.COLUMN_NUMERO, editableKirja.getNumero());
 	    bundle.putString(KirjaRepository.COLUMN_NIMI, editableKirja.getNimi());
 	    bundle.putInt(KirjaRepository.COLUMN_PAINOS, editableKirja.getPainos());
-	    bundle.putLong(KirjaRepository.COLUMN_HANKINTAPVM, editableKirja.getHankintapvmUnixTime());
+	    bundle.putString(KirjaRepository.COLUMN_HANKINTAPVM, editableKirja.getHankintapvm());
 
 	    // Luo uusi intent millä siirrytään activitystä toiseen, ja lisää bundle siihen mukaan
 	    Intent intent = new Intent(this, EditKirja.class);
@@ -84,22 +108,28 @@ public class MainActivity extends AppCompatActivity {
 		    return;
 	    }
 
-	    Date parsedHankintapvm = null;
+	    // Validoi päivämäärä
 	    try {
-		    parsedHankintapvm = this.sdf.parse(parsedStringHankintapvm);
+		    this.sdf.parse(parsedStringHankintapvm);
 	    } catch (ParseException e) {
 		    Toast.makeText(getApplicationContext(),"Ole hyvä ja syötä 'Hankinta pvm' muodossa 'pp.kk.vvvv'!", Toast.LENGTH_LONG).show();
 		    return;
 	    }
 
 	    // Luo uusi kirja
-        Kirja uusiKirja = new Kirja(parsedNumero, parsedNimi, parsedPainos, parsedHankintapvm);
-	    this.database.KirjaRepository.add(uusiKirja);
+        Kirja uusiKirja = new Kirja(parsedNumero, parsedNimi, parsedPainos, parsedStringHankintapvm);
+	    if (this.database.KirjaRepository.add(uusiKirja) > 0) {
 
-        // Päivitä näkymä
-        this.listaaKirjat();
+		    Toast.makeText(getApplicationContext(),"Uusi kirja lisätty!", Toast.LENGTH_LONG).show();
 
-	    Toast.makeText(getApplicationContext(),"Uusi kirja lisätty!", Toast.LENGTH_LONG).show();
+		    // Päivitä näkymä
+		    this.listaaKirjat();
+
+	    } else {
+	    	// Jotakin meni pieleen
+		    Toast.makeText(getApplicationContext(),"Jotakin meni pieleen uuden luonnissa...", Toast.LENGTH_LONG).show();
+	    }
+
     }
     private void deletefirst_click(View view) {
 
@@ -129,11 +159,21 @@ public class MainActivity extends AppCompatActivity {
             textView.setText(kirja.toString());
             textView.setTextSize(17f);
 
+            // Lisää rivi jonka sisälle teksti laitetaan
             TableRow tableRow = new TableRow(this);
             tableRow.setPadding(5, 5, 5, 5);
             tableRow.addView(textView);
 			tableRow.setTag(kirja); // Lisää Kirja-olion referenssi 'TableRow'iin
 
+	        // Lisää "onclick"-kuuntelija riville kun sitä painaa, niin avataan toinen sivu
+	        tableRow.setOnClickListener(new View.OnClickListener() {
+		        @Override
+		        public void onClick(View view) {
+			        MainActivity.this.edit_click(view);
+		        }
+	        });
+
+	        // Nyt lisää rivi UI:lle uutena rivinä
             this.listaus.addView(tableRow);
         }
 
@@ -150,30 +190,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Päivitä näytettävät rivit
         this.listaaKirjat();
-    }
-    private void getViews() {
-
-	    this.numero = findViewById(R.id.numero);
-	    this.nimi = findViewById(R.id.nimi);
-	    this.painos = findViewById(R.id.painos);
-	    this.hankintapvm = findViewById(R.id.hankintapvm);
-	    this.addnew = findViewById(R.id.addnew);
-	    this.deletefirst = findViewById(R.id.deletefirst);
-	    this.listaus = findViewById(R.id.listaus);
-
-	    this.addnew.setOnClickListener(new View.OnClickListener() {
-		    @Override
-		    public void onClick(View view) {
-			    addnew_click(view);
-		    }
-	    });
-	    this.deletefirst.setOnClickListener(new View.OnClickListener() {
-		    @Override
-		    public void onClick(View view) {
-			    deletefirst_click(view);
-		    }
-	    });
-
     }
 
 }
